@@ -1,0 +1,33 @@
+name: Analyze Code Quality
+
+inputs:
+  sonar_token:
+    description: 'SonarCloud token'
+    required: true
+  github_token:
+    description: 'Github token'
+    required: true
+  coverage_file_path:
+    description: 'Path to coverage report file'
+    required: false
+  coverage_cache_key:
+    description: 'Cache key for coverage report - if not provided, coverage report will not be generated'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Restore cached coverage report
+      if: ${{ inputs.coverage_cache_key != null }}
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.coverage_file_path }}
+        key: ${{ inputs.coverage_cache_key }}
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        SONAR_TOKEN: ${{ inputs.sonar_token }}
